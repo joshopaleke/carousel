@@ -4,10 +4,12 @@
 
 const Navigator = (() => {
   let $nav;
+  let $addBtn;
 
   function init() {
     $nav = document.getElementById('nav-slides');
-    document.getElementById('nav-add-btn').addEventListener('click', () => {
+    $addBtn = document.getElementById('nav-add-btn');
+    $addBtn.addEventListener('click', () => {
       const idx = slideIndex(STATE.carousel.selectedSlideId);
       Canvas.addSlideAfter(idx >= 0 ? idx : STATE.carousel.slides.length - 1);
     });
@@ -82,8 +84,9 @@ const Navigator = (() => {
     });
 
     // Add button
-    const $add = document.getElementById('nav-add-btn');
-    $nav.appendChild($add);
+    if ($addBtn) {
+      $nav.appendChild($addBtn);
+    }
   }
 
   function renderMiniSlide(slide, W, H, origW, origH) {
