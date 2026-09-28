@@ -4,44 +4,75 @@
 
 /* ── HEIC / image conversion helper ───────── */
 function convertImageFile(file) {
-  return new Promise((resolve) => {
+  return new Promise(async (resolve) => {
     const name = (file.name || '').toLowerCase();
-    const isHeic = name.endsWith('.heic') || name.endsWith('.heif') || file.type === 'image/heic' || file.type === 'image/heif';
+    const isHeic = name.endsWith('.heic') || name.endsWith('.heif') ||
+                   file.type === 'image/heic' || file.type === 'image/heif';
 
     if (!isHeic) {
       resolve(file);
       return;
     }
 
-    const url = URL.createObjectURL(file);
-    const img = new Image();
-    img.onload = () => {
+    // Strategy 1: Use heic2any library (proper WASM-based HEIC decoder)
+    if (typeof heic2any !== 'undefined') {
       try {
-        const canvas = document.createElement('canvas');
-        canvas.width = img.naturalWidth;
-        canvas.height = img.naturalHeight;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0);
-        canvas.toBlob(blob => {
-          URL.revokeObjectURL(url);
-          if (blob) {
-            const converted = new File([blob], file.name.replace(/\.heic$/i, '.jpg').replace(/\.heif$/i, '.jpg'), { type: 'image/jpeg' });
-            resolve(converted);
-          } else {
-            resolve(file);
-          }
-        }, 'image/jpeg', 0.92);
-      } catch (e) {
-        URL.revokeObjectURL(url);
-        resolve(file);
+        UI.toast('Converting HEIC photo…', '⏳');
+        const blob = await heic2any({
+          blob: file,
+          toType: 'image/jpeg',
+          quality: 0.92,
+        });
+        // heic2any may return a single blob or an array
+        const resultBlob = Array.isArray(blob) ? blob[0] : blob;
+        const converted = new File(
+          [resultBlob],
+          file.name.replace(/\.heic$/i, '.jpg').replace(/\.heif$/i, '.jpg'),
+          { type: 'image/jpeg' }
+        );
+        UI.toast('HEIC converted ✓', '✓');
+        resolve(converted);
+        return;
+      } catch (err) {
+        console.warn('heic2any conversion failed, trying fallback:', err);
       }
-    };
-    img.onerror = () => {
+    }
+
+    // Strategy 2: Native browser decode (works on Safari 17+ with HEIC support)
+    try {
+      const url = URL.createObjectURL(file);
+      const img = await new Promise((res, rej) => {
+        const i = new Image();
+        i.onload = () => res(i);
+        i.onerror = rej;
+        i.src = url;
+      });
+
+      const canvas = document.createElement('canvas');
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0);
       URL.revokeObjectURL(url);
-      UI.toast('HEIC format decoded with fallback', 'ℹ');
-      resolve(file);
-    };
-    img.src = url;
+
+      const resultBlob = await new Promise(r => canvas.toBlob(r, 'image/jpeg', 0.92));
+      if (resultBlob && resultBlob.size > 0) {
+        const converted = new File(
+          [resultBlob],
+          file.name.replace(/\.heic$/i, '.jpg').replace(/\.heif$/i, '.jpg'),
+          { type: 'image/jpeg' }
+        );
+        UI.toast('HEIC converted (native) ✓', '✓');
+        resolve(converted);
+        return;
+      }
+    } catch (_) {
+      // Native decode not supported
+    }
+
+    // Strategy 3: Last resort — pass through and warn the user
+    UI.toast('HEIC could not be converted. Try a JPG or PNG instead.', '⚠');
+    resolve(file);
   });
 }
 
