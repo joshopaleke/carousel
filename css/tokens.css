@@ -1,0 +1,78 @@
+/* ─────────────────────────────────────────────
+   CAROUSEL. — Design Tokens
+   ───────────────────────────────────────────── */
+
+:root {
+  /* Colours */
+  --c-bg:          #0a0a0a;
+  --c-surface:     #111111;
+  --c-surface-2:   #181818;
+  --c-surface-3:   #222222;
+  --c-border:      rgba(255,255,255,0.07);
+  --c-border-2:    rgba(255,255,255,0.12);
+  --c-text:        #f0ede8;
+  --c-text-2:      rgba(240,237,232,0.55);
+  --c-text-3:      rgba(240,237,232,0.28);
+  --c-accent:      #e8d5b0;
+  --c-accent-2:    #c9a96e;
+  --c-accent-dim:  rgba(232,213,176,0.08);
+  --c-white:       #ffffff;
+  --c-danger:      #e05c5c;
+
+  /* Art Direction Accents */
+  --c-editorial:   #e8d5b0;
+  --c-cinematic:   #6b9fd4;
+  --c-brutalist:   #f0f0f0;
+  --c-minimal:     #c8c8c8;
+  --c-experimental:#d4a0e0;
+  --c-luxury:      #c9a96e;
+
+  /* Composition accents */
+  --c-symmetric:   #9dc4b0;
+  --c-asymmetric:  #d4a0e0;
+  --c-cinematic-c: #6b9fd4;
+
+  /* Typography */
+  --font-display:  'Playfair Display', 'Georgia', serif;
+  --font-sans:     'Inter', system-ui, sans-serif;
+  --font-mono:     'JetBrains Mono', 'Fira Code', monospace;
+
+  /* Spacing */
+  --sp-1:  4px;
+  --sp-2:  8px;
+  --sp-3:  12px;
+  --sp-4:  16px;
+  --sp-5:  20px;
+  --sp-6:  24px;
+  --sp-7:  32px;
+  --sp-8:  40px;
+  --sp-9:  48px;
+  --sp-10: 64px;
+  --sp-11: 80px;
+  --sp-12: 96px;
+
+  /* Radii */
+  --r-sm:  4px;
+  --r-md:  8px;
+  --r-lg:  12px;
+  --r-xl:  16px;
+  --r-full: 9999px;
+
+  /* Shadows */
+  --shadow-sm:  0 1px 3px rgba(0,0,0,0.4);
+  --shadow-md:  0 4px 16px rgba(0,0,0,0.5);
+  --shadow-lg:  0 12px 40px rgba(0,0,0,0.6);
+  --shadow-xl:  0 24px 80px rgba(0,0,0,0.7);
+
+  /* Transitions */
+  --t-fast:   120ms ease;
+  --t-normal: 220ms ease;
+  --t-slow:   380ms cubic-bezier(0.22,1,0.36,1);
+  --t-spring: 520ms cubic-bezier(0.34,1.56,0.64,1);
+
+  /* Layout */
+  --panel-left:  260px;
+  --panel-right: 280px;
+  --toolbar-h:   52px;
+  --nav-h:       140px;
+}

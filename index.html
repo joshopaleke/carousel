@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Carousel. — Cinematic Carousel Composer</title>
+  <meta name="description" content="Create artistic, editorial, cinematic social-media carousels with a continuous canvas and intelligent composition.">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Inter:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/reset.css">
+  <link rel="stylesheet" href="css/screens.css">
+  <link rel="stylesheet" href="css/editor.css">
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════
+     SCREEN: LANDING
+════════════════════════════════════════════ -->
+<div id="screen-landing">
+  <!-- Ambient orbs -->
+  <div class="landing-orb landing-orb-1"></div>
+  <div class="landing-orb landing-orb-2"></div>
+  <div class="landing-orb landing-orb-3"></div>
+
+  <div class="landing-content">
+    <div class="landing-eyebrow">Cinematic Carousel Composer</div>
+
+    <div class="landing-wordmark">
+      Carousel<span class="dot">.</span>
+      <span class="subtitle-inline">One canvas. Many slides. One story.</span>
+    </div>
+
+    <div class="landing-tagline">
+      Make scrolling feel like an experience.
+    </div>
+
+    <div class="landing-cta-group">
+      <button class="btn-primary" id="btn-create">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Create carousel
+      </button>
+      <button class="btn-secondary" id="btn-view-demo">View demo →</button>
+    </div>
+
+    <div class="landing-features">
+      <div class="landing-feature">
+        <div class="landing-feature-value">Continuous canvas</div>
+        <div class="landing-feature-label">Signature feature</div>
+      </div>
+      <div class="landing-feature" style="color:var(--c-border-2)">·</div>
+      <div class="landing-feature">
+        <div class="landing-feature-value">6 art directions</div>
+        <div class="landing-feature-label">Editorial styles</div>
+      </div>
+      <div class="landing-feature" style="color:var(--c-border-2)">·</div>
+      <div class="landing-feature">
+        <div class="landing-feature-value">PNG export</div>
+        <div class="landing-feature-label">High resolution</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Decorative slide strip -->
+  <div class="landing-strip">
+    <div class="landing-strip-slide"><div class="strip-bar"></div><div class="strip-block wide"></div><div class="strip-block narrow"></div></div>
+    <div class="landing-strip-slide"><div class="strip-block wide"></div><div class="strip-block wide"></div><div class="strip-block xnarrow"></div></div>
+    <div class="landing-strip-slide"><div class="strip-bar"></div><div class="strip-block narrow"></div></div>
+    <div class="landing-strip-slide"><div class="strip-block wide"></div><div class="strip-block wide"></div></div>
+    <div class="landing-strip-slide"><div class="strip-bar"></div><div class="strip-block wide"></div><div class="strip-block narrow"></div><div class="strip-block xnarrow"></div></div>
+    <div class="landing-strip-slide"><div class="strip-block wide"></div><div class="strip-block wide"></div><div class="strip-block wide"></div></div>
+    <div class="landing-strip-slide"><div class="strip-bar"></div><div class="strip-block narrow"></div></div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════
+     SCREEN: WIZARD
+════════════════════════════════════════════ -->
+<div id="screen-wizard">
+  <header class="wizard-header">
+    <div class="wizard-wordmark">Carousel<span class="dot">.</span></div>
+    <div class="wizard-steps">
+      <div class="wizard-step-dot active"></div>
+      <div class="wizard-step-dot"></div>
+      <div class="wizard-step-dot"></div>
+      <div class="wizard-step-dot"></div>
+    </div>
+    <div id="wizard-summary" class="wizard-summary"></div>
+  </header>
+
+  <div class="wizard-body">
+
+    <!-- Step 1: Slide count -->
+    <div class="wizard-panel active" id="wizard-step-0">
+      <div class="wizard-question">
+        <div class="wizard-question-number">01 / 04</div>
+        <div class="wizard-question-title">How many slides?</div>
+        <div class="wizard-question-subtitle">Choose the length of your carousel. You can add or remove slides later.</div>
+      </div>
+      <div class="slide-count-grid">
+        <div class="count-pill" data-count="4">4</div>
+        <div class="count-pill" data-count="5">5</div>
+        <div class="count-pill" data-count="6">6</div>
+        <div class="count-pill" data-count="7">7</div>
+        <div class="count-pill" data-count="8">8</div>
+        <div class="count-pill" data-count="10">10</div>
+        <div class="count-pill" data-count="12">12</div>
+        <div class="count-pill" data-count="15">15</div>
+      </div>
+    </div>
+
+    <!-- Step 2: Composition -->
+    <div class="wizard-panel" id="wizard-step-1">
+      <div class="wizard-question">
+        <div class="wizard-question-number">02 / 04</div>
+        <div class="wizard-question-title">Choose a composition.</div>
+        <div class="wizard-question-subtitle">This determines how elements are arranged across your slides.</div>
+      </div>
+      <div class="option-cards">
+        <!-- Symmetric -->
+        <div class="option-card" data-composition-pick="symmetric"
+             style="--card-color:var(--c-symmetric); --card-glow:radial-gradient(circle at 50% 0%, rgba(157,196,176,0.08), transparent 70%); --card-icon-bg:rgba(157,196,176,0.1);">
+          <div class="card-preview">
+            <div class="preview-slide">
+              <div class="preview-bar w-70" style="background:rgba(157,196,176,0.5);"></div>
+              <div class="preview-bar w-50" style="background:rgba(157,196,176,0.3);"></div>
+            </div>
+            <div class="preview-slide">
+              <div class="preview-img-block"></div>
+            </div>
+            <div class="preview-slide">
+              <div class="preview-bar w-full" style="background:rgba(157,196,176,0.5);"></div>
+              <div class="preview-bar w-70" style="background:rgba(157,196,176,0.3);"></div>
+            </div>
+          </div>
+          <div class="card-icon" style="background:rgba(157,196,176,0.1);">⊞</div>
+          <div class="card-title">Symmetric</div>
+          <div class="card-desc">Structured, balanced and editorial. Strong grids and intentional spacing.</div>
+          <div class="card-tags">
+            <span class="card-tag">Educational</span>
+            <span class="card-tag">Minimalist</span>
+            <span class="card-tag">Product</span>
+          </div>
+        </div>
+
+        <!-- Asymmetric -->
+        <div class="option-card" data-composition-pick="asymmetric"
+             style="--card-color:var(--c-asymmetric); --card-glow:radial-gradient(circle at 50% 0%, rgba(212,160,224,0.08), transparent 70%); --card-icon-bg:rgba(212,160,224,0.1);">
+          <div class="card-preview">
+            <div class="preview-slide" style="flex:0.3;">
+              <div class="preview-bar w-full" style="background:rgba(212,160,224,0.5);"></div>
+            </div>
+            <div class="preview-slide" style="flex:0.7;">
+              <div class="preview-img-block"></div>
+              <div class="preview-bar w-70" style="background:rgba(212,160,224,0.4);margin-top:3px;"></div>
+            </div>
+          </div>
+          <div class="card-icon" style="background:rgba(212,160,224,0.1);">⊟</div>
+          <div class="card-title">Asymmetric</div>
+          <div class="card-desc">Intentionally unbalanced. Unexpected compositions with strong visual tension.</div>
+          <div class="card-tags">
+            <span class="card-tag">Fashion</span>
+            <span class="card-tag">Culture</span>
+            <span class="card-tag">Creative</span>
+          </div>
+        </div>
+
+        <!-- Cinematic -->
+        <div class="option-card selected" data-composition-pick="cinematic"
+             style="--card-color:var(--c-cinematic-c); --card-glow:radial-gradient(circle at 50% 0%, rgba(107,159,212,0.08), transparent 70%); --card-icon-bg:rgba(107,159,212,0.1);">
+          <div class="card-preview">
+            <div class="preview-slide" style="position:relative;overflow:hidden;">
+              <div class="preview-img-block" style="position:absolute;inset:0;height:100%;"></div>
+              <div style="position:absolute;bottom:4px;left:4px;right:4px;">
+                <div class="preview-bar w-70" style="background:rgba(107,159,212,0.7);"></div>
+              </div>
+            </div>
+            <div class="preview-slide" style="position:relative;overflow:hidden;">
+              <div class="preview-img-block" style="position:absolute;inset:0;height:70%;"></div>
+              <div style="position:absolute;bottom:4px;left:4px;right:4px;">
+                <div class="preview-bar w-50" style="background:rgba(107,159,212,0.5);"></div>
+              </div>
+            </div>
+            <div class="preview-slide" style="position:relative;overflow:hidden;">
+              <div class="preview-img-block" style="position:absolute;inset:0;height:100%;"></div>
+            </div>
+          </div>
+          <div class="card-icon" style="background:rgba(107,159,212,0.1);">⬛</div>
+          <div class="card-title">Cinematic</div>
+          <div class="card-desc">Image-led with strong visual continuity. Dramatic crops and storytelling.</div>
+          <div class="card-tags">
+            <span class="card-tag">Photography</span>
+            <span class="card-tag">Travel</span>
+            <span class="card-tag">Essays</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 3: Content Mode -->
+    <div class="wizard-panel" id="wizard-step-2">
+      <div class="wizard-question">
+        <div class="wizard-question-number">03 / 04</div>
+        <div class="wizard-question-title">What are you adding?</div>
+        <div class="wizard-question-subtitle">You're not locked in — you can mix modes in the editor.</div>
+      </div>
+      <div class="option-cards four-col" style="max-width:600px;">
+        <div class="option-card selected" data-content-pick="mixed"
+             style="--card-color:var(--c-accent); --card-glow:radial-gradient(circle at 50% 0%, rgba(232,213,176,0.06), transparent 70%);">
+          <div class="card-icon">⊕</div>
+          <div class="card-title">Text + Images</div>
+          <div class="card-desc">The full toolkit. Type and imagery in balance.</div>
+        </div>
+        <div class="option-card" data-content-pick="image"
+             style="--card-color:#6b9fd4; --card-glow:radial-gradient(circle at 50% 0%, rgba(107,159,212,0.06), transparent 70%);">
+          <div class="card-icon">🖼</div>
+          <div class="card-title">Images only</div>
+          <div class="card-desc">Pure visual sequence. Let photography speak.</div>
+        </div>
+        <div class="option-card" data-content-pick="typography"
+             style="--card-color:#e8d5b0; --card-glow:radial-gradient(circle at 50% 0%, rgba(232,213,176,0.06), transparent 70%);">
+          <div class="card-icon" style="font-family:var(--font-display);font-size:22px;font-weight:700;">T</div>
+          <div class="card-title">Typography only</div>
+          <div class="card-desc">Large type as the primary visual. Words as images.</div>
+        </div>
+        <div class="option-card" data-content-pick="text"
+             style="--card-color:#9dc4b0; --card-glow:radial-gradient(circle at 50% 0%, rgba(157,196,176,0.06), transparent 70%);">
+          <div class="card-icon">≡</div>
+          <div class="card-title">Text only</div>
+          <div class="card-desc">For essays, quotes, and editorial storytelling.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 4: Art Direction -->
+    <div class="wizard-panel" id="wizard-step-3">
+      <div class="wizard-question">
+        <div class="wizard-question-number">04 / 04</div>
+        <div class="wizard-question-title">Choose your direction.</div>
+        <div class="wizard-question-subtitle">Not a template — an art direction. A visual language for your carousel.</div>
+      </div>
+      <div class="option-cards six-col" style="max-width:680px;">
+
+        <div class="option-card selected" data-artdir-pick="editorial"
+             style="--card-color:#e8d5b0; --card-glow:radial-gradient(circle at 50% 0%, rgba(232,213,176,0.06), transparent 70%);">
+          <div class="card-icon" style="background:rgba(232,213,176,0.1);font-family:var(--font-display);font-weight:700;font-size:16px;">Ed</div>
+          <div class="card-title" style="color:#e8d5b0;">Editorial</div>
+          <div class="card-desc">Large type, strong grid, magazine-inspired. Dark and considered.</div>
+        </div>
+
+        <div class="option-card" data-artdir-pick="cinematic"
+             style="--card-color:#6b9fd4; --card-glow:radial-gradient(circle at 50% 0%, rgba(107,159,212,0.06), transparent 70%);">
+          <div class="card-icon" style="background:rgba(107,159,212,0.1);">🎞</div>
+          <div class="card-title" style="color:#6b9fd4;">Cinematic</div>
+          <div class="card-desc">Deep contrast, dramatic crops, visual storytelling. Film-like.</div>
+        </div>
+
+        <div class="option-card" data-artdir-pick="brutalist"
+             style="--card-color:#f0f0f0; --card-glow:radial-gradient(circle at 50% 0%, rgba(240,240,240,0.04), transparent 70%);">
+          <div class="card-icon" style="background:rgba(240,240,240,0.1);font-size:18px;font-weight:900;">B</div>
+          <div class="card-title" style="color:#f0f0f0;">Brutalist</div>
+          <div class="card-desc">Oversized type, hard alignment, unexpected spacing, raw energy.</div>
+        </div>
+
+        <div class="option-card" data-artdir-pick="minimal"
+             style="--card-color:#c8c8c8; --card-glow:radial-gradient(circle at 50% 0%, rgba(200,200,200,0.04), transparent 70%);">
+          <div class="card-icon" style="background:rgba(200,200,200,0.1);font-size:11px;letter-spacing:0.1em;">○</div>
+          <div class="card-title" style="color:#c8c8c8;">Minimal</div>
+          <div class="card-desc">Whitespace, subtle imagery, quiet compositions. Light mode.</div>
+        </div>
+
+        <div class="option-card" data-artdir-pick="experimental"
+             style="--card-color:#d4a0e0; --card-glow:radial-gradient(circle at 50% 0%, rgba(212,160,224,0.06), transparent 70%);">
+          <div class="card-icon" style="background:rgba(212,160,224,0.1);">✦</div>
+          <div class="card-title" style="color:#d4a0e0;">Experimental</div>
+          <div class="card-desc">Asymmetry, overlapping elements, broken grids. For the brave.</div>
+        </div>
+
+        <div class="option-card" data-artdir-pick="luxury"
+             style="--card-color:#c9a96e; --card-glow:radial-gradient(circle at 50% 0%, rgba(201,169,110,0.06), transparent 70%);">
+          <div class="card-icon" style="background:rgba(201,169,110,0.1);">◆</div>
+          <div class="card-title" style="color:#c9a96e;">Luxury</div>
+          <div class="card-desc">Large negative space, elegant typography, slow visual rhythm.</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /wizard-body -->
+
+  <footer class="wizard-footer">
+    <button class="btn-ghost" id="wizard-back-btn" style="visibility:hidden;">← Back</button>
+    <button class="btn-primary" id="wizard-next-btn">Continue →</button>
+  </footer>
+</div><!-- /screen-wizard -->
+
+
+<!-- ═══════════════════════════════════════════
+     SCREEN: EDITOR
+════════════════════════════════════════════ -->
+<div id="screen-editor">
+
+  <!-- ── Toolbar ── -->
+  <div class="editor-toolbar">
+    <div class="toolbar-left">
+      <button class="tb-btn" id="btn-home" title="Home">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      </button>
+      <div class="toolbar-wordmark">Carousel<span class="dot">.</span></div>
+      <div class="tb-divider"></div>
+      <button class="tb-btn" id="btn-undo" title="Undo (⌘Z)" style="opacity:0.3;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.3L1 10"/></svg>
+      </button>
+      <button class="tb-btn" id="btn-redo" title="Redo (⌘Y)" style="opacity:0.3;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.49-4.3L23 10"/></svg>
+      </button>
+    </div>
+
+    <div class="toolbar-center">
+      <input class="carousel-title-input" id="carousel-title" value="Untitled Carousel" placeholder="Untitled Carousel">
+    </div>
+
+    <div class="toolbar-right">
+      <div class="zoom-control">
+        <button class="tb-btn" id="btn-zoom-out" style="width:24px;">−</button>
+        <div class="zoom-value" id="zoom-value" title="Click to fit">45%</div>
+        <button class="tb-btn" id="btn-zoom-in"  style="width:24px;">+</button>
+      </div>
+      <div class="tb-divider"></div>
+      <button class="tb-btn icon-text" id="btn-preview" title="Preview (⌘P)">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        Preview
+      </button>
+      <button class="btn-primary" id="btn-export" style="padding:0 14px;height:32px;font-size:12px;">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Export
+      </button>
+    </div>
+  </div><!-- /toolbar -->
+
+  <!-- ── Main area ── -->
+  <div class="editor-main">
+
+    <!-- LEFT PANEL -->
+    <div class="panel-left">
+      <div class="panel-tabs">
+        <div class="panel-tab active" data-tab="style">Style</div>
+        <div class="panel-tab" data-tab="images">Images</div>
+        <div class="panel-tab" data-tab="elements">Elements</div>
+      </div>
+      <div class="panel-body">
+        <div class="panel-tab-content" data-tab-content="style" id="panel-style-content">
+          <!-- Built by LeftPanel.buildStylePanel() -->
+        </div>
+        <div class="panel-tab-content hidden" data-tab-content="images" id="panel-images-content">
+          <!-- Built by LeftPanel.buildImagesPanel() -->
+        </div>
+        <div class="panel-tab-content hidden" data-tab-content="elements" id="panel-elements-content">
+          <!-- Built by LeftPanel.buildElementsPanel() -->
+        </div>
+      </div>
+    </div>
+
+    <!-- CANVAS -->
+    <div class="canvas-area">
+      <div id="canvas-viewport" class="canvas-viewport">
+        <div id="canvas-scroll-inner" class="canvas-scroll-inner"></div>
+      </div>
+
+      <!-- Slide Navigator -->
+      <div class="slide-navigator">
+        <div class="nav-header">
+          <div class="nav-header-title">
+            Slides — <span id="nav-slide-count">0</span>
+          </div>
+          <div class="nav-header-actions">
+            <button class="tb-btn" title="Scroll left" id="nav-scroll-left">←</button>
+            <button class="tb-btn" title="Scroll right" id="nav-scroll-right">→</button>
+          </div>
+        </div>
+        <div class="nav-slides" id="nav-slides">
+          <button class="nav-add-btn" id="nav-add-btn" style="width:52px;height:76px;">+</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL — Inspector -->
+    <div class="panel-right">
+      <div class="inspector-header">
+        <div class="inspector-title" id="inspector-title">Inspector</div>
+        <div class="status-pill saved" id="save-status">● Saved</div>
+      </div>
+      <div class="inspector-body" id="inspector-body">
+        <div style="padding:var(--sp-6) var(--sp-4); text-align:center; color:var(--c-text-3);">
+          <div style="font-size:24px; margin-bottom:var(--sp-3);">✦</div>
+          <div style="font-size:11px; line-height:1.6;">Select a slide or element to inspect its properties</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /editor-main -->
+</div><!-- /screen-editor -->
+
+
+<!-- ═══════════════════════════════════════════
+     PREVIEW OVERLAY
+════════════════════════════════════════════ -->
+<div id="screen-preview">
+  <div class="preview-header">
+    <div class="preview-title">Preview</div>
+    <div class="preview-counter" id="preview-counter">1 / 6</div>
+  </div>
+
+  <button class="preview-close" id="preview-close">✕</button>
+
+  <div class="preview-stage">
+    <button class="preview-nav-btn" id="preview-prev">‹</button>
+    <div class="preview-slide-wrapper" id="preview-slide-wrapper" style="width:480px;height:480px;"></div>
+    <button class="preview-nav-btn" id="preview-next">›</button>
+  </div>
+
+  <div class="preview-dots" id="preview-dots"></div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════
+     EXPORT MODAL
+════════════════════════════════════════════ -->
+<div class="modal-overlay" id="export-modal">
+  <div class="modal-box">
+    <div class="modal-title">Export carousel</div>
+    <div class="modal-subtitle">Your carousel will be exported as high-resolution 1080px images, ready for social media.</div>
+
+    <div class="export-options">
+      <div class="export-option selected" data-format="png">
+        <div class="export-option-icon">🖼</div>
+        <div class="export-option-title">PNG files</div>
+        <div class="export-option-desc">All slides as individual PNG images</div>
+      </div>
+      <div class="export-option" data-format="png-zip">
+        <div class="export-option-icon">📦</div>
+        <div class="export-option-title">All slides</div>
+        <div class="export-option-desc">Download all slides in sequence</div>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-ghost" id="export-cancel">Cancel</button>
+      <button class="btn-primary" id="export-confirm">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Export
+      </button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════
+     SHARED UTILITIES
+════════════════════════════════════════════ -->
+
+<!-- Hidden image upload input -->
+<input type="file" id="image-upload-hidden" accept="image/*" style="display:none;" data-target-slide="" data-target-el="">
+
+<!-- Toast container -->
+<div class="toast-container" id="toast-container"></div>
+
+
+<!-- ═══════════════════════════════════════════
+     SCRIPTS
+════════════════════════════════════════════ -->
+<script src="js/state.js"></script>
+<script src="js/slides.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/canvas.js"></script>
+<script src="js/navigator.js"></script>
+<script src="js/inspector.js"></script>
+<script src="js/leftpanel.js"></script>
+<script src="js/preview.js"></script>
+<script src="js/exporter.js"></script>
+<script src="js/app.js"></script>
+
+<script>
+  // Navigator slide count badge
+  Events.on('canvas:rebuild', () => {
+    const $count = document.getElementById('nav-slide-count');
+    if ($count) $count.textContent = STATE.carousel.slides.length;
+  });
+
+  // Navigator scroll buttons
+  document.getElementById('nav-scroll-left')?.addEventListener('click', () => {
+    document.getElementById('nav-slides').scrollBy({ left: -200, behavior: 'smooth' });
+  });
+  document.getElementById('nav-scroll-right')?.addEventListener('click', () => {
+    document.getElementById('nav-slides').scrollBy({ left: 200, behavior: 'smooth' });
+  });
+
+  // Auto-save simulation (status dot)
+  setInterval(() => {
+    const $s = document.getElementById('save-status');
+    if ($s) $s.textContent = '● Saved';
+  }, 5000);
+</script>
+
+</body>
+</html>
