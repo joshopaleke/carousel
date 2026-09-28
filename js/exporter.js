@@ -1,8 +1,10 @@
 /* ─────────────────────────────────────────────
-   CAROUSEL. — Export Engine
+   CAROUSEL. — Export Engine (with preview)
    ───────────────────────────────────────────── */
 
 const Exporter = (() => {
+  let _previewDataUrls = []; // cached rendered previews
+
   function init() {
     document.getElementById('export-cancel')?.addEventListener('click', closeModal);
     document.getElementById('export-confirm')?.addEventListener('click', doExport);
@@ -16,14 +18,49 @@ const Exporter = (() => {
     });
   }
 
-  function openModal() {
+  async function openModal() {
     STATE.ui.exportModalOpen = true;
     document.getElementById('export-modal').classList.add('active');
+
+    // Render preview thumbnails
+    await renderPreviews();
   }
 
   function closeModal() {
     STATE.ui.exportModalOpen = false;
     document.getElementById('export-modal').classList.remove('active');
+    _previewDataUrls = [];
+  }
+
+  async function renderPreviews() {
+    const $scroll = document.getElementById('export-preview-scroll');
+    const $loading = document.getElementById('export-loading');
+    $scroll.innerHTML = '';
+    $loading.style.display = 'flex';
+
+    const slides = STATE.carousel.slides;
+    const { w, h } = getFormatDims();
+    _previewDataUrls = [];
+
+    for (let i = 0; i < slides.length; i++) {
+      try {
+        const dataUrl = await renderSlideToCanvas(slides[i], w, h);
+        _previewDataUrls.push(dataUrl);
+
+        // Create thumbnail
+        const $thumb = document.createElement('div');
+        $thumb.className = 'export-preview-thumb';
+        $thumb.innerHTML = `
+          <img src="${dataUrl}" alt="Slide ${i + 1}" draggable="false" />
+          <div class="export-thumb-label">${String(i + 1).padStart(2, '0')}</div>
+        `;
+        $scroll.appendChild($thumb);
+      } catch (err) {
+        console.warn(`Failed to render slide ${i + 1}`, err);
+      }
+    }
+
+    $loading.style.display = 'none';
   }
 
   async function doExport() {
@@ -34,17 +71,29 @@ const Exporter = (() => {
     UI.toast('Preparing export…', '⏳');
     closeModal();
 
-    if (fmt === 'png-zip') {
-      await exportZip(slides, w, h);
-    } else {
-      // Export individual PNGs one by one (download)
+    // Use cached previews if available, otherwise re-render
+    if (_previewDataUrls.length !== slides.length) {
+      _previewDataUrls = [];
       for (let i = 0; i < slides.length; i++) {
-        const dataUrl = await renderSlideToCanvas(slides[i], w, h);
-        downloadDataUrl(dataUrl, `${sanitiseTitle()}_${String(i+1).padStart(2,'0')}.png`);
+        _previewDataUrls.push(await renderSlideToCanvas(slides[i], w, h));
+      }
+    }
+
+    if (fmt === 'png-zip') {
+      for (let i = 0; i < slides.length; i++) {
+        UI.toast(`Exporting slide ${i + 1}/${slides.length}`, '⬇');
+        await sleep(80);
+        downloadDataUrl(_previewDataUrls[i], `${sanitiseTitle()}_${String(i + 1).padStart(2, '0')}.png`);
+      }
+      UI.toast(`All ${slides.length} slides exported!`, '✓');
+    } else {
+      for (let i = 0; i < slides.length; i++) {
+        downloadDataUrl(_previewDataUrls[i], `${sanitiseTitle()}_${String(i + 1).padStart(2, '0')}.png`);
         await sleep(120);
       }
       UI.toast(`${slides.length} slides exported`, '✓');
     }
+    _previewDataUrls = [];
   }
 
   async function renderSlideToCanvas(slide, w, h) {
@@ -59,8 +108,10 @@ const Exporter = (() => {
 
     // Elements (sorted by z)
     const sorted = [...slide.elements].sort((a, b) => {
-      const order = { image: 0, shape: 1, text: 2 };
-      return (order[a.type] ?? 1) - (order[b.type] ?? 1);
+      const defaultOrder = { image: 1, shape: 2, text: 6 };
+      const za = a.zIndex ?? defaultOrder[a.type] ?? 1;
+      const zb = b.zIndex ?? defaultOrder[b.type] ?? 1;
+      return za - zb;
     });
 
     for (const el of sorted) {
@@ -76,13 +127,24 @@ const Exporter = (() => {
       }
 
       if (el.type === 'shape') {
-        ctx.fillStyle = el.fill;
-        ctx.fillRect(el.x, el.y, el.width, el.height);
+        if (el.fill && el.fill !== 'transparent') {
+          ctx.fillStyle = el.fill;
+          ctx.fillRect(el.x, el.y, el.width, el.height);
+        }
+        if (el.stroke && el.strokeWidth) {
+          ctx.lineWidth = el.strokeWidth;
+          ctx.strokeStyle = el.stroke;
+          ctx.strokeRect(el.x, el.y, el.width, el.height);
+        }
 
       } else if (el.type === 'text') {
         ctx.fillStyle = el.color;
         ctx.font = `${el.fontWeight} ${el.fontSize}px '${el.fontFamily}', serif`;
         ctx.textBaseline = 'top';
+        if (el.isBadge) {
+          ctx.shadowColor = 'rgba(0,0,0,0.6)';
+          ctx.shadowBlur = 8;
+        }
         if (el.align === 'center') {
           ctx.textAlign = 'center';
           renderWrappedText(ctx, el.content, el.x + el.width / 2, el.y, el.width, el.fontSize * el.lineHeight, el.letterSpacing);
@@ -102,6 +164,12 @@ const Exporter = (() => {
         const { sx, sy, sw, sh } = coverFit(img.width, img.height, el.width, el.height, el.focalX/100, el.focalY/100);
         ctx.drawImage(img, sx, sy, sw, sh, el.x, el.y, el.width, el.height);
         ctx.filter = 'none';
+
+        if (el.borderWidth && el.borderColor) {
+          ctx.lineWidth = el.borderWidth;
+          ctx.strokeStyle = el.borderColor;
+          ctx.strokeRect(el.x, el.y, el.width, el.height);
+        }
       }
 
       ctx.restore();
@@ -152,19 +220,6 @@ const Exporter = (() => {
       img.onerror = reject;
       img.src = src;
     });
-  }
-
-  async function exportZip(slides, w, h) {
-    // Manual ZIP construction without external library
-    // We'll use a simple approach: download each slide with a short delay
-    // and show a progress toast
-    for (let i = 0; i < slides.length; i++) {
-      UI.toast(`Exporting slide ${i+1}/${slides.length}`, '⬇');
-      const dataUrl = await renderSlideToCanvas(slides[i], w, h);
-      await sleep(80);
-      downloadDataUrl(dataUrl, `${sanitiseTitle()}_${String(i+1).padStart(2,'0')}.png`);
-    }
-    UI.toast(`All ${slides.length} slides exported!`, '✓');
   }
 
   function downloadDataUrl(dataUrl, filename) {

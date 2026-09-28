@@ -92,7 +92,7 @@ const UI = (() => {
   }
 
   /* ── Wizard logic ─────────────────────────── */
-  const WIZARD_STEPS = ['slide-count', 'composition', 'content-mode', 'art-direction'];
+  const WIZARD_STEPS = ['slide-count', 'composition', 'canvas-size', 'content-mode', 'art-direction'];
   let _currentStep = 0;
 
   function wizardGoTo(step) {
@@ -143,9 +143,11 @@ const UI = (() => {
   function updateWizardSummary() {
     const $s = document.getElementById('wizard-summary');
     if (!$s) return;
+    const fmt = FORMATS[STATE.carousel.format];
     const chips = [];
     if (STATE.wizard.slideCount) chips.push({ label: `${STATE.wizard.slideCount} slides` });
     if (STATE.wizard.composition) chips.push({ label: STATE.wizard.composition });
+    if (fmt) chips.push({ label: fmt.label });
     if (STATE.wizard.contentMode) chips.push({ label: STATE.wizard.contentMode });
     if (STATE.wizard.artDirection) chips.push({ label: STATE.wizard.artDirection });
 

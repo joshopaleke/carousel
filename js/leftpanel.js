@@ -12,6 +12,21 @@ const LeftPanel = (() => {
         document.querySelectorAll('.panel-tab-content').forEach($c => $c.classList.toggle('hidden', $c.dataset.tabContent !== STATE.ui.leftTab));
       });
     });
+
+    // Listen for image library additions from the file input
+    document.addEventListener('image-library-add', (e) => {
+      const { file, dataUrl } = e.detail;
+      _imageLibrary.push({ src: dataUrl, name: file.name });
+      const $section = document.getElementById('uploaded-images-section');
+      if ($section) $section.style.display = '';
+      _renderImageGrid();
+
+      // Add to selected slide
+      const slideId = STATE.carousel.selectedSlideId;
+      if (slideId) {
+        Canvas.handleImageFile(file, slideId, null);
+      }
+    });
   }
 
   function buildStylePanel() {
@@ -58,6 +73,7 @@ const LeftPanel = (() => {
         <div class="panel-section-title">Palette</div>
         <div class="swatch-row" style="flex-wrap:wrap;gap:6px;">
           ${[
+            ['#0d0d0f','#f5f5f7','#ff2a2a'],
             ['#111111','#f0ede8','#c9a96e'],
             ['#0d0f14','#e8e4dc','#6b9fd4'],
             ['#ffffff','#000000','#e05c5c'],
@@ -84,19 +100,29 @@ const LeftPanel = (() => {
       <div class="panel-section">
         <div class="panel-section-title">Composition</div>
         <div class="style-chips">
-          ${['symmetric','asymmetric','cinematic'].map(c => `
-            <div class="style-chip${STATE.wizard.composition === c ? ' selected':''}" data-composition="${c}">${c}</div>
+          ${['lookbook','cinematic','symmetric','asymmetric'].map(c => `
+            <div class="style-chip${STATE.wizard.composition === c ? ' selected':''}" data-composition="${c}">${c === 'lookbook' ? '✦ lookbook' : c}</div>
           `).join('')}
         </div>
+      </div>
+
+      <!-- Stamp / Badge -->
+      <div class="panel-section">
+        <div class="panel-section-title">Editorial Badge Stamp</div>
+        <input class="property-input" id="global-badge-text" value="${STATE.style.badgeText || 'SUNDAY\nOOTD'}" placeholder="e.g. SUNDAY OOTD" style="width:100%;font-size:11px;">
+        <div style="font-size:9px;color:var(--c-text-3);margin-top:4px;">Appears on framed hero and lookbook slides</div>
       </div>
 
       <!-- Format -->
       <div class="panel-section">
         <div class="panel-section-title">Format</div>
-        <div class="style-chips">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
           ${Object.entries(FORMATS).map(([key, fmt]) => `
             <div class="style-chip${STATE.carousel.format === key ? ' selected':''}" data-format="${key}"
-                 style="font-size:10px;" title="${fmt.label}">${fmt.label}</div>
+                 style="display:flex;flex-direction:column;align-items:flex-start;padding:8px 10px;font-size:10px;" title="${fmt.desc}">
+              <span style="font-weight:700;">${fmt.icon} ${fmt.label}</span>
+              <span style="font-size:9px;color:var(--c-text-3);margin-top:2px;">${fmt.w}×${fmt.h}</span>
+            </div>
           `).join('')}
         </div>
       </div>
@@ -196,6 +222,17 @@ const LeftPanel = (() => {
       Canvas.rebuild();
     });
 
+    $body.querySelector('#global-badge-text')?.addEventListener('change', e => {
+      STATE.style.badgeText = e.target.value;
+      STATE.carousel.slides.forEach(s => {
+        s.elements.forEach(el => {
+          if (el.isBadge) el.content = e.target.value;
+        });
+      });
+      HISTORY.snapshot();
+      Canvas.rebuild();
+    });
+
     $body.querySelector('#btn-regenerate')?.addEventListener('click', () => {
       generateCarousel();
       HISTORY.snapshot();
@@ -204,40 +241,86 @@ const LeftPanel = (() => {
     });
   }
 
+  // Global image library (persists across panel rebuilds)
+  const _imageLibrary = [];
+
   function buildImagesPanel() {
     const $body = document.getElementById('panel-images-content');
     if (!$body) return;
 
     $body.innerHTML = `
       <div class="panel-section">
-        <div class="panel-section-title">Upload images</div>
+        <div class="panel-section-title">Upload Folder / Photos</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px;">
+          <button class="btn-primary" id="btn-leftpanel-folder" style="font-size:11px;padding:8px 6px;justify-content:center;">
+            📁 Select folder
+          </button>
+          <button class="btn-secondary" id="btn-leftpanel-batch" style="font-size:11px;padding:8px 6px;justify-content:center;">
+            🖼 Batch photos
+          </button>
+        </div>
         <div class="upload-zone" id="upload-zone-main">
           <div class="upload-zone-icon">📁</div>
-          <div class="upload-zone-label">Drop images here<br>or click to browse</div>
-          <div class="upload-zone-sublabel">PNG · JPG · WebP · SVG</div>
+          <div class="upload-zone-label">Drop entire folder or photos here</div>
+          <div class="upload-zone-sublabel">PNG · JPG · HEIC · WebP · Directory</div>
         </div>
       </div>
-      <div class="panel-section" id="uploaded-images-section" style="display:none;">
-        <div class="panel-section-title">Uploaded images</div>
+      <div class="panel-section" id="uploaded-images-section" style="${_imageLibrary.length ? '' : 'display:none;'}">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+          <div class="panel-section-title" style="margin:0;">Library (${_imageLibrary.length})</div>
+          <div style="display:flex;gap:4px;">
+            <button class="btn-ghost" id="btn-leftpanel-shuffle" title="Shuffle images across slides" style="font-size:10px;padding:2px 6px;">🔀 Shuffle</button>
+            <button class="btn-primary" id="btn-leftpanel-smart" title="Auto-compose with these photos" style="font-size:10px;padding:2px 8px;">✨ Compose</button>
+          </div>
+        </div>
         <div id="uploaded-images-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;"></div>
       </div>
       <div class="panel-section">
         <div class="panel-section-title">Usage tips</div>
         <div style="font-size:11px;color:var(--c-text-3);line-height:1.7;">
-          • Click a slide to target it<br>
-          • Click an uploaded image to add it<br>
-          • Drag images to reposition<br>
-          • Use inspector to adjust focal point
+          • Click <b>Select folder</b> to import a whole directory<br>
+          • Click <b>✨ Compose</b> to smartly generate lookbook slides<br>
+          • Click an image thumbnail to add to slide<br>
+          • Drag images to reposition & adjust focal point
         </div>
       </div>
     `;
 
-    $body.querySelector('#upload-zone-main')?.addEventListener('click', () => {
-      const id = STATE.carousel.selectedSlideId;
-      if (!id) { UI.toast('Select a slide first', '⚠'); return; }
-      Canvas.triggerImageUpload(id);
+    // Render existing thumbnails
+    _renderImageGrid();
+
+    // Folder select
+    $body.querySelector('#btn-leftpanel-folder')?.addEventListener('click', () => {
+      document.getElementById('folder-upload-hidden')?.click();
     });
 
+    // Batch photos select
+    $body.querySelector('#btn-leftpanel-batch')?.addEventListener('click', () => {
+      document.getElementById('batch-photos-upload-hidden')?.click();
+    });
+
+    // Smart compose button
+    $body.querySelector('#btn-leftpanel-smart')?.addEventListener('click', () => {
+      openSmartComposeModal(_imageLibrary);
+    });
+
+    // Shuffle button
+    $body.querySelector('#btn-leftpanel-shuffle')?.addEventListener('click', () => {
+      shuffleCarouselImages();
+      UI.toast('Images shuffled across slides', '🔀');
+    });
+
+    // Upload zone click
+    $body.querySelector('#upload-zone-main')?.addEventListener('click', () => {
+      const $input = document.getElementById('image-upload-hidden');
+      const id = STATE.carousel.selectedSlideId;
+      $input.dataset.targetSlide = id || '';
+      $input.dataset.targetEl = '';
+      $input.dataset.libraryMode = 'true';
+      $input.click();
+    });
+
+    // Drag and drop with recursive folder traversal
     $body.querySelector('#upload-zone-main')?.addEventListener('dragover', e => {
       e.preventDefault();
       e.currentTarget.style.borderColor = 'var(--c-accent)';
@@ -245,14 +328,97 @@ const LeftPanel = (() => {
     $body.querySelector('#upload-zone-main')?.addEventListener('dragleave', e => {
       e.currentTarget.style.borderColor = '';
     });
-    $body.querySelector('#upload-zone-main')?.addEventListener('drop', e => {
+    $body.querySelector('#upload-zone-main')?.addEventListener('drop', async (e) => {
       e.preventDefault();
       e.currentTarget.style.borderColor = '';
-      const file = e.dataTransfer.files[0];
-      if (!file || !file.type.startsWith('image/')) return;
-      const id = STATE.carousel.selectedSlideId;
-      if (!id) { UI.toast('Select a slide first', '⚠'); return; }
-      Canvas.handleImageFile(file, id, null);
+      const files = await getFilesFromDataTransfer(e.dataTransfer);
+      if (!files.length) return;
+      UI.toast(`Processing ${files.length} images…`, '⏳');
+      for (const rawFile of files) {
+        const file = await convertImageFile(rawFile);
+        if (!file) continue;
+        _addToLibrary(file);
+      }
+      setTimeout(() => {
+        openSmartComposeModal(_imageLibrary);
+      }, 300);
+    });
+  }
+
+  function _addToLibrary(file) {
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const dataUrl = ev.target.result;
+      _imageLibrary.push({ src: dataUrl, name: file.name });
+
+      // Show section
+      const $section = document.getElementById('uploaded-images-section');
+      if ($section) $section.style.display = '';
+
+      _renderImageGrid();
+
+      // Also add to currently selected slide if one is selected
+      const slideId = STATE.carousel.selectedSlideId;
+      if (slideId) {
+        Canvas.handleImageFile(file, slideId, null);
+      }
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function _renderImageGrid() {
+    const $grid = document.getElementById('uploaded-images-grid');
+    if (!$grid) return;
+    const $section = document.getElementById('uploaded-images-section');
+
+    // Update title count
+    if ($section) {
+      const $title = $section.querySelector('.panel-section-title');
+      if ($title) $title.textContent = `Image library (${_imageLibrary.length})`;
+    }
+
+    $grid.innerHTML = _imageLibrary.map((img, i) => `
+      <div class="uploaded-image-thumb" data-lib-idx="${i}" title="${img.name}" style="
+        position:relative;border-radius:6px;overflow:hidden;cursor:pointer;
+        border:1px solid var(--c-border);aspect-ratio:1;transition:all 0.15s ease;
+      ">
+        <img src="${img.src}" style="width:100%;height:100%;object-fit:cover;display:block;" draggable="false" />
+        <div style="position:absolute;bottom:0;left:0;right:0;padding:4px 6px;background:linear-gradient(transparent,rgba(0,0,0,0.7));
+          font-size:9px;color:rgba(255,255,255,0.7);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+          ${img.name}
+        </div>
+      </div>
+    `).join('');
+
+    // Bind click to add image to selected slide
+    $grid.querySelectorAll('[data-lib-idx]').forEach($thumb => {
+      $thumb.addEventListener('click', () => {
+        const idx = parseInt($thumb.dataset.libIdx, 10);
+        const img = _imageLibrary[idx];
+        if (!img) return;
+        const slideId = STATE.carousel.selectedSlideId;
+        if (!slideId) { UI.toast('Select a slide first', '⚠'); return; }
+
+        const slide = getSlide(slideId);
+        if (!slide) return;
+        const { w, h } = getFormatDims();
+        const el = makeImageElement({ x: 0, y: 0, width: w, height: h, src: img.src });
+        slide.elements.unshift(el);
+        STATE.carousel.selectedElementId = el.id;
+        HISTORY.snapshot();
+        Canvas.rebuild();
+        UI.toast('Image added to slide', '🖼');
+      });
+
+      // Hover effect
+      $thumb.addEventListener('mouseenter', () => {
+        $thumb.style.borderColor = 'var(--c-accent)';
+        $thumb.style.transform = 'scale(1.03)';
+      });
+      $thumb.addEventListener('mouseleave', () => {
+        $thumb.style.borderColor = 'var(--c-border)';
+        $thumb.style.transform = '';
+      });
     });
   }
 
@@ -342,5 +508,12 @@ const LeftPanel = (() => {
     });
   }
 
-  return { init, buildStylePanel, buildImagesPanel, buildElementsPanel };
+  return {
+    init,
+    buildStylePanel,
+    buildImagesPanel,
+    buildElementsPanel,
+    getImageLibrary: () => _imageLibrary,
+    addToLibrary: _addToLibrary,
+  };
 })();

@@ -214,6 +214,46 @@ const Inspector = (() => {
               <div class="slider-value" id="prop-sa-val">${el.filters?.saturation ?? 100}</div>
             </div>
           </div>
+          <div style="margin-top:12px;">
+            <div class="inspector-group-title" style="margin-bottom:6px;">Frame & Border</div>
+            <div class="slider-row">
+              <div class="slider-label">Border</div>
+              <input type="range" class="panel-slider" id="prop-img-border" min="0" max="12" value="${el.borderWidth || 0}">
+              <div class="slider-value" id="prop-img-border-val">${el.borderWidth || 0}px</div>
+            </div>
+            <div class="property-row" style="margin-top:6px;">
+              <div class="property-label">Color</div>
+              <div style="display:flex;gap:8px;align-items:center;flex:1;">
+                <input type="color" id="prop-img-border-color" value="${el.borderColor || '#ffffff'}" style="width:32px;height:28px;border:none;background:none;cursor:pointer;padding:0;border-radius:4px;">
+                <input class="property-input" id="prop-img-border-hex" value="${el.borderColor || '#ffffff'}" style="flex:1;font-family:var(--font-mono);">
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    } else if (el.type === 'shape') {
+      specificHtml = `
+        <div class="inspector-group">
+          <div class="inspector-group-title">Shape & Frame</div>
+          <div class="property-row">
+            <div class="property-label">Fill</div>
+            <div style="display:flex;gap:8px;align-items:center;flex:1;">
+              <input type="color" id="prop-shape-fill" value="${el.fill === 'transparent' ? '#000000' : (el.fill || '#c9a96e')}" style="width:32px;height:28px;border:none;background:none;cursor:pointer;padding:0;border-radius:4px;">
+              <input class="property-input" id="prop-shape-hex" value="${el.fill || 'transparent'}" style="flex:1;font-family:var(--font-mono);">
+            </div>
+          </div>
+          <div class="slider-row" style="margin-top:8px;">
+            <div class="slider-label">Stroke</div>
+            <input type="range" class="panel-slider" id="prop-shape-stroke-w" min="0" max="15" value="${el.strokeWidth || 0}">
+            <div class="slider-value" id="prop-shape-stroke-val">${el.strokeWidth || 0}px</div>
+          </div>
+          <div class="property-row" style="margin-top:6px;">
+            <div class="property-label">Stroke Col</div>
+            <div style="display:flex;gap:8px;align-items:center;flex:1;">
+              <input type="color" id="prop-shape-stroke-color" value="${el.stroke || '#ff2a2a'}" style="width:32px;height:28px;border:none;background:none;cursor:pointer;padding:0;border-radius:4px;">
+              <input class="property-input" id="prop-shape-stroke-hex" value="${el.stroke || '#ff2a2a'}" style="flex:1;font-family:var(--font-mono);">
+            </div>
+          </div>
         </div>
       `;
     }
@@ -369,7 +409,66 @@ const Inspector = (() => {
       mkSlider('prop-contrast',   'prop-ct-val', 'contrast',   applyImageFilters);
       mkSlider('prop-saturation', 'prop-sa-val', 'saturation', applyImageFilters);
 
+      // Border controls for image
+      const borderSlider = $body.querySelector('#prop-img-border');
+      borderSlider?.addEventListener('input', e => {
+        el.borderWidth = parseInt(e.target.value, 10);
+        $body.querySelector('#prop-img-border-val').textContent = el.borderWidth + 'px';
+        Canvas.rebuild();
+      });
+      borderSlider?.addEventListener('change', () => HISTORY.snapshot());
+
+      const bColorI = $body.querySelector('#prop-img-border-color');
+      const bHexI = $body.querySelector('#prop-img-border-hex');
+      bColorI?.addEventListener('input', e => {
+        el.borderColor = e.target.value;
+        if (bHexI) bHexI.value = e.target.value;
+        Canvas.rebuild();
+      });
+      bHexI?.addEventListener('change', e => {
+        el.borderColor = e.target.value;
+        if (bColorI) bColorI.value = e.target.value;
+        Canvas.rebuild();
+      });
+
       $body.querySelector('#prop-replace-img')?.addEventListener('click', () => Canvas.triggerImageUpload(slide.id, el.id));
+    }
+
+    // Shape-specific
+    if (el.type === 'shape') {
+      const sFillI = $body.querySelector('#prop-shape-fill');
+      const sHexI  = $body.querySelector('#prop-shape-hex');
+      sFillI?.addEventListener('input', e => {
+        el.fill = e.target.value;
+        if (sHexI) sHexI.value = e.target.value;
+        Canvas.rebuild();
+      });
+      sHexI?.addEventListener('change', e => {
+        el.fill = e.target.value;
+        if (sFillI) sFillI.value = e.target.value;
+        Canvas.rebuild();
+      });
+
+      const sStrokeSlider = $body.querySelector('#prop-shape-stroke-w');
+      sStrokeSlider?.addEventListener('input', e => {
+        el.strokeWidth = parseInt(e.target.value, 10);
+        $body.querySelector('#prop-shape-stroke-val').textContent = el.strokeWidth + 'px';
+        Canvas.rebuild();
+      });
+      sStrokeSlider?.addEventListener('change', () => HISTORY.snapshot());
+
+      const sStrokeColorI = $body.querySelector('#prop-shape-stroke-color');
+      const sStrokeHexI   = $body.querySelector('#prop-shape-stroke-hex');
+      sStrokeColorI?.addEventListener('input', e => {
+        el.stroke = e.target.value;
+        if (sStrokeHexI) sStrokeHexI.value = e.target.value;
+        Canvas.rebuild();
+      });
+      sStrokeHexI?.addEventListener('change', e => {
+        el.stroke = e.target.value;
+        if (sStrokeColorI) sStrokeColorI.value = e.target.value;
+        Canvas.rebuild();
+      });
     }
 
     $body.querySelector('#insp-del-el')?.addEventListener('click', () => Canvas.deleteElement(slide.id, el.id));

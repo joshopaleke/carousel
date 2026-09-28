@@ -105,10 +105,13 @@ function genId(prefix = 'el') {
 
 // ── Format dimensions ────────────────────────
 const FORMATS = {
-  square:    { w: 1080, h: 1080, label: 'Square 1:1' },
-  portrait:  { w: 1080, h: 1350, label: 'Portrait 4:5' },
-  story:     { w: 1080, h: 1920, label: 'Story 9:16' },
-  landscape: { w: 1920, h: 1080, label: 'Landscape 16:9' },
+  square:    { w: 1080, h: 1080, label: 'Square 1:1',       icon: '⬜', desc: 'Instagram Feed, Facebook' },
+  portrait:  { w: 1080, h: 1350, label: 'Portrait 4:5',     icon: '▯',  desc: 'Instagram Feed (tall)' },
+  story:     { w: 1080, h: 1920, label: 'Story 9:16',       icon: '📱', desc: 'Instagram / TikTok Stories' },
+  landscape: { w: 1920, h: 1080, label: 'Landscape 16:9',   icon: '🖥',  desc: 'YouTube, Presentations' },
+  linkedin:  { w: 1200, h: 627,  label: 'LinkedIn 1.91:1',  icon: '💼', desc: 'LinkedIn Post' },
+  twitter:   { w: 1600, h: 900,  label: 'Twitter/X 16:9',   icon: '𝕏',  desc: 'Twitter/X Post' },
+  fbcover:   { w: 1640, h: 924,  label: 'FB Cover 16:9',    icon: '📘', desc: 'Facebook Cover Photo' },
 };
 
 function getFormatDims() {
@@ -124,16 +127,22 @@ const ROLE_ICONS = {
 
 // ── Art directions ───────────────────────────
 const ART_DIRECTIONS = {
-  editorial:    { label: 'Editorial',    color: '#e8d5b0', bg: '#111111', text: '#f0ede8', accent: '#c9a96e', font: 'Playfair Display' },
-  cinematic:    { label: 'Cinematic',    color: '#6b9fd4', bg: '#0d0f14', text: '#e8e4dc', accent: '#6b9fd4', font: 'Playfair Display' },
-  brutalist:    { label: 'Brutalist',    color: '#f0f0f0', bg: '#ffffff', text: '#000000', accent: '#e05c5c', font: 'Inter' },
-  minimal:      { label: 'Minimal',      color: '#c8c8c8', bg: '#f5f5f3', text: '#1a1a1a', accent: '#888888', font: 'Inter' },
-  experimental: { label: 'Experimental', color: '#d4a0e0', bg: '#0f0a18', text: '#e8e0f0', accent: '#d4a0e0', font: 'Playfair Display' },
-  luxury:       { label: 'Luxury',       color: '#c9a96e', bg: '#0c0a06', text: '#f0ede4', accent: '#c9a96e', font: 'Playfair Display' },
+  lookbook:     { label: 'Street Lookbook (OOTD)', color: '#ff2a2a', bg: '#0d0d0f', text: '#f5f5f7', accent: '#ff2a2a', secondaryAccent: '#ffffff', font: 'Playfair Display' },
+  editorial:    { label: 'Editorial',              color: '#e8d5b0', bg: '#111111', text: '#f0ede8', accent: '#c9a96e', secondaryAccent: '#ffffff', font: 'Playfair Display' },
+  cinematic:    { label: 'Cinematic',              color: '#6b9fd4', bg: '#0d0f14', text: '#e8e4dc', accent: '#6b9fd4', secondaryAccent: '#ffffff', font: 'Playfair Display' },
+  brutalist:    { label: 'Brutalist',              color: '#f0f0f0', bg: '#ffffff', text: '#000000', accent: '#e05c5c', secondaryAccent: '#000000', font: 'Inter' },
+  minimal:      { label: 'Minimal',                color: '#c8c8c8', bg: '#f5f5f3', text: '#1a1a1a', accent: '#888888', secondaryAccent: '#000000', font: 'Inter' },
+  experimental: { label: 'Experimental',           color: '#d4a0e0', bg: '#0f0a18', text: '#e8e0f0', accent: '#d4a0e0', secondaryAccent: '#ffffff', font: 'Playfair Display' },
+  luxury:       { label: 'Luxury',                 color: '#c9a96e', bg: '#0c0a06', text: '#f0ede4', accent: '#c9a96e', secondaryAccent: '#ffffff', font: 'Playfair Display' },
 };
 
 // ── Composition presets ──────────────────────
 const COMPOSITIONS = {
+  lookbook: {
+    label: 'Street Lookbook',
+    description: 'Framed cutouts, 3-stack details, floating PIP cards & bento grids',
+    layouts: ['lookbook-framed-hero', 'lookbook-3stack-detail', 'lookbook-pip-cards', 'lookbook-split-floating', 'lookbook-accent-highlight', 'lookbook-contact-grid', 'lookbook-hero-clean'],
+  },
   symmetric: {
     label: 'Symmetric',
     description: 'Structured, balanced, editorial',

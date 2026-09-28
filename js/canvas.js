@@ -127,6 +127,8 @@ const Canvas = (() => {
     const pw2 = Math.round(el.width * zoom);
     const ph2 = Math.round(el.height * zoom);
 
+    const zIndexVal = el.zIndex ?? (el.type === 'image' ? (el.isFloating ? 4 : 1) : el.type === 'shape' ? (el.strokeWidth ? 5 : 2) : 6);
+
     $el.style.cssText = `
       left:    ${pw}px;
       top:     ${pt}px;
@@ -134,7 +136,7 @@ const Canvas = (() => {
       height:  ${ph2}px;
       opacity: ${el.opacity};
       transform: rotate(${el.rotation || 0}deg);
-      z-index: ${el.type === 'image' ? 1 : el.type === 'shape' ? 2 : 3};
+      z-index: ${zIndexVal};
     `;
 
     if (el.id === STATE.carousel.selectedElementId) {
@@ -152,9 +154,25 @@ const Canvas = (() => {
       $el.style.letterSpacing = (el.letterSpacing * zoom) + 'px';
       $el.style.overflow   = 'visible';
       $el.textContent      = el.content;
+      if (el.isBadge) {
+        $el.style.textShadow = '0 2px 10px rgba(0,0,0,0.6)';
+        $el.style.whiteSpace = 'pre-line';
+      }
 
     } else if (el.type === 'image') {
       $el.classList.add('slide-image-el');
+      if (el.borderWidth && el.borderColor) {
+        const bw = Math.max(1, Math.round(el.borderWidth * zoom));
+        $el.style.border = `${bw}px solid ${el.borderColor}`;
+        $el.style.boxSizing = 'border-box';
+      }
+      if (el.borderRadius) {
+        $el.style.borderRadius = Math.round(el.borderRadius * zoom) + 'px';
+      }
+      if (el.boxShadow) {
+        $el.style.boxShadow = el.boxShadow;
+      }
+
       if (el.src) {
         const $img = document.createElement('img');
         $img.src = el.src;
@@ -173,8 +191,16 @@ const Canvas = (() => {
       }
 
     } else if (el.type === 'shape') {
-      $el.style.background = el.fill;
-      $el.style.borderRadius = '1px';
+      if (el.stroke && el.strokeWidth) {
+        const sw = Math.max(1, Math.round(el.strokeWidth * zoom));
+        $el.style.border = `${sw}px solid ${el.stroke}`;
+        $el.style.background = (el.fill === 'transparent' || !el.fill) ? 'transparent' : el.fill;
+        $el.style.boxSizing = 'border-box';
+        $el.style.pointerEvents = 'auto';
+      } else {
+        $el.style.background = el.fill || 'transparent';
+        $el.style.borderRadius = '1px';
+      }
     }
 
     // Make element selectable & draggable
@@ -457,10 +483,10 @@ const Canvas = (() => {
     rebuild();
   }
 
-  function triggerImageUpload(slideId) {
+  function triggerImageUpload(slideId, elId) {
     const $input = document.getElementById('image-upload-hidden');
     $input.dataset.targetSlide = slideId;
-    $input.dataset.targetEl = '';
+    $input.dataset.targetEl = elId || '';
     $input.click();
   }
 

@@ -90,7 +90,7 @@ const Preview = (() => {
     `;
 
     slide.elements.forEach(el => {
-      const $el = document.createElement('div');
+      const zVal = el.zIndex ?? (el.type === 'image' ? (el.isFloating ? 4 : 1) : el.type === 'shape' ? (el.strokeWidth ? 5 : 2) : 6);
       $el.style.cssText = `
         position:absolute;
         left:${Math.round(el.x * scale)}px;
@@ -100,7 +100,7 @@ const Preview = (() => {
         opacity:${el.opacity};
         transform:rotate(${el.rotation||0}deg);
         overflow:hidden;
-        z-index:${el.type==='image'?1:el.type==='shape'?2:3};
+        z-index:${zVal};
       `;
 
       if (el.type === 'text') {
@@ -111,11 +111,23 @@ const Preview = (() => {
         $el.style.textAlign  = el.align;
         $el.style.lineHeight = el.lineHeight;
         $el.style.letterSpacing = (el.letterSpacing * scale) + 'px';
-        $el.style.whiteSpace = 'pre-wrap';
+        $el.style.whiteSpace = el.isBadge ? 'pre-line' : 'pre-wrap';
         $el.style.wordBreak  = 'break-word';
         $el.textContent      = el.content;
         $el.style.overflow   = 'visible';
+        if (el.isBadge) {
+          $el.style.textShadow = '0 2px 10px rgba(0,0,0,0.6)';
+        }
       } else if (el.type === 'image') {
+        if (el.borderWidth && el.borderColor) {
+          const bw = Math.max(1, Math.round(el.borderWidth * scale));
+          $el.style.border = `${bw}px solid ${el.borderColor}`;
+          $el.style.boxSizing = 'border-box';
+        }
+        if (el.boxShadow) {
+          $el.style.boxShadow = el.boxShadow;
+        }
+
         if (el.src) {
           const $img = document.createElement('img');
           $img.src = el.src;
@@ -131,8 +143,15 @@ const Preview = (() => {
           $el.innerHTML = `<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>`;
         }
       } else if (el.type === 'shape') {
-        $el.style.background = el.fill;
-        $el.style.borderRadius = '1px';
+        if (el.stroke && el.strokeWidth) {
+          const sw = Math.max(1, Math.round(el.strokeWidth * scale));
+          $el.style.border = `${sw}px solid ${el.stroke}`;
+          $el.style.background = (el.fill === 'transparent' || !el.fill) ? 'transparent' : el.fill;
+          $el.style.boxSizing = 'border-box';
+        } else {
+          $el.style.background = el.fill || 'transparent';
+          $el.style.borderRadius = '1px';
+        }
       }
 
       $content.appendChild($el);
