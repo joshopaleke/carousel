@@ -106,7 +106,7 @@ const Navigator = (() => {
           top:${Math.round(el.y * scaleY)}px;
           width:${Math.round(el.width * scaleX)}px;
           font-size:${Math.max(3, Math.round(el.fontSize * scaleX))}px;
-          font-family:'${el.fontFamily}',serif;
+          font-family:"${el.fontFamily}",sans-serif;
           font-weight:${el.fontWeight};
           color:${el.color};
           opacity:${el.opacity};

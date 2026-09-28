@@ -519,7 +519,288 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }, { passive: false });
 
+  /* ── Font Manager Modal Controller ─────────── */
+  let _activeFontFilter = 'all';
+  let _fontSearchQuery = '';
+
+  function openFontManagerModal() {
+    const $modal = document.getElementById('font-manager-modal');
+    if (!$modal) return;
+    $modal.classList.remove('hidden');
+    $modal.style.display = 'flex';
+    renderFontCards(_activeFontFilter, _fontSearchQuery);
+    updateSpecimenPreview(STATE.style.fontDisplay);
+  }
+
+  function closeFontManagerModal() {
+    const $modal = document.getElementById('font-manager-modal');
+    if (!$modal) return;
+    $modal.classList.add('hidden');
+    $modal.style.display = 'none';
+  }
+
+  function renderFontCards(filter = 'all', searchQuery = '') {
+    const $container = document.getElementById('font-cards-container');
+    if (!$container || typeof Fonts === 'undefined') return;
+
+    const laptopList = Fonts.getLaptopFonts();
+    const customList = Fonts.getCustomFonts();
+    const systemList = Fonts.getSystemFonts();
+    const webList = Fonts.getWebFonts();
+
+    // Update counts in filter chips
+    const totalCount = laptopList.length + customList.length + systemList.length + webList.length;
+    const countAll = document.getElementById('count-all-fonts');
+    const countLaptop = document.getElementById('count-laptop-fonts');
+    const countCustom = document.getElementById('count-custom-fonts');
+    const countSystem = document.getElementById('count-system-fonts');
+    const countWeb = document.getElementById('count-web-fonts');
+
+    if (countAll) countAll.textContent = totalCount;
+    if (countLaptop) countLaptop.textContent = laptopList.length;
+    if (countCustom) countCustom.textContent = customList.length;
+    if (countSystem) countSystem.textContent = systemList.length;
+    if (countWeb) countWeb.textContent = webList.length;
+
+    let fonts = [];
+
+    if (filter === 'all' || filter === 'custom') {
+      customList.forEach(f => fonts.push({ name: f, type: 'custom', label: 'Custom' }));
+    }
+    if (filter === 'all' || filter === 'laptop') {
+      laptopList.forEach(f => fonts.push({ name: f, type: 'laptop', label: 'Laptop' }));
+    }
+    if (filter === 'all' || filter === 'system') {
+      systemList.forEach(f => fonts.push({ name: f, type: 'system', label: 'macOS/Win' }));
+    }
+    if (filter === 'all' || filter === 'web') {
+      webList.forEach(f => fonts.push({ name: f, type: 'web', label: 'Editorial' }));
+    }
+
+    // Deduplicate by name
+    const seen = new Set();
+    fonts = fonts.filter(item => {
+      const key = item.name.toLowerCase();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+
+    // Filter by search query
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      fonts = fonts.filter(item => item.name.toLowerCase().includes(q));
+    }
+
+    if (fonts.length === 0) {
+      $container.innerHTML = `
+        <div style="grid-column:1/-1;padding:40px 20px;text-align:center;color:var(--c-text-3);">
+          <div style="font-size:28px;margin-bottom:8px;">🔍</div>
+          <div style="font-size:13px;font-weight:600;margin-bottom:4px;">No fonts found matching "${searchQuery}"</div>
+          <div style="font-size:11px;">Try clicking "Scan Installed Laptop Fonts" or import a .ttf/.otf font file.</div>
+        </div>
+      `;
+      return;
+    }
+
+    const selectedEl = getSelectedElement();
+    const hasSelectedText = selectedEl && selectedEl.type === 'text';
+
+    $container.innerHTML = fonts.map(f => {
+      const isCurrentDisplay = STATE.style.fontDisplay.toLowerCase() === f.name.toLowerCase();
+      const isCurrentBody = (STATE.style.fontBody || 'Inter').toLowerCase() === f.name.toLowerCase();
+      return `
+        <div class="font-specimen-card${isCurrentDisplay ? ' active-display' : ''}" data-font-family="${f.name}">
+          <div class="font-card-meta">
+            <div style="display:flex;align-items:center;gap:6px;min-width:0;">
+              <span style="font-weight:700;font-size:12px;color:var(--c-text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                ${f.name}
+              </span>
+              ${isCurrentDisplay ? '<span style="font-size:9px;color:var(--c-accent);font-weight:700;">★ DISPLAY</span>' : ''}
+              ${isCurrentBody ? '<span style="font-size:9px;color:#60a5fa;font-weight:700;">BODY</span>' : ''}
+            </div>
+            <span class="font-badge ${f.type}">${f.label}</span>
+          </div>
+
+          <div class="font-specimen-preview" style="font-family:'${f.name}', sans-serif;">
+            Aa Bb Gg 123 — Editorial
+          </div>
+
+          <div style="display:flex;gap:4px;margin-top:2px;">
+            <button class="btn-ghost font-set-display-btn" data-font="${f.name}" style="flex:1;height:24px;font-size:10px;padding:0 4px;justify-content:center;background:var(--c-surface-1);">
+              Set Display
+            </button>
+            <button class="btn-ghost font-set-body-btn" data-font="${f.name}" style="flex:1;height:24px;font-size:10px;padding:0 4px;justify-content:center;background:var(--c-surface-1);">
+              Set Body
+            </button>
+            ${hasSelectedText ? `
+              <button class="btn-ghost font-apply-selection-btn" data-font="${f.name}" style="height:24px;font-size:10px;padding:0 6px;justify-content:center;border-color:var(--c-accent);color:var(--c-accent);background:var(--c-surface-1);">
+                Apply
+              </button>
+            ` : ''}
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    // Wire specimen click & buttons
+    $container.querySelectorAll('.font-specimen-card').forEach($card => {
+      $card.addEventListener('click', (e) => {
+        if (e.target.tagName === 'BUTTON') return;
+        const font = $card.dataset.fontFamily;
+        updateSpecimenPreview(font);
+      });
+    });
+
+    $container.querySelectorAll('.font-set-display-btn').forEach($btn => {
+      $btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const font = $btn.dataset.font;
+        STATE.style.fontDisplay = font;
+        STATE.carousel.slides.forEach(s => {
+          s.elements.forEach(el => {
+            if (el.type === 'text' && (el.role === 'hero' || el.role === 'label' || !el.role)) {
+              el.fontFamily = font;
+            }
+          });
+        });
+        HISTORY.snapshot();
+        Canvas.rebuild();
+        LeftPanel.buildStylePanel();
+        Inspector.refresh();
+        renderFontCards(_activeFontFilter, _fontSearchQuery);
+        updateSpecimenPreview(font);
+        UI.toast(`Headline font set to "${font}"`, 'Aa');
+      });
+    });
+
+    $container.querySelectorAll('.font-set-body-btn').forEach($btn => {
+      $btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const font = $btn.dataset.font;
+        STATE.style.fontBody = font;
+        STATE.carousel.slides.forEach(s => {
+          s.elements.forEach(el => {
+            if (el.type === 'text' && (el.role === 'supporting' || el.role === 'info')) {
+              el.fontFamily = font;
+            }
+          });
+        });
+        HISTORY.snapshot();
+        Canvas.rebuild();
+        LeftPanel.buildStylePanel();
+        Inspector.refresh();
+        renderFontCards(_activeFontFilter, _fontSearchQuery);
+        updateSpecimenPreview(font);
+        UI.toast(`Body font set to "${font}"`, 'Aa');
+      });
+    });
+
+    $container.querySelectorAll('.font-apply-selection-btn').forEach($btn => {
+      $btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const font = $btn.dataset.font;
+        const el = getSelectedElement();
+        if (el && el.type === 'text') {
+          el.fontFamily = font;
+          HISTORY.snapshot();
+          Canvas.rebuild();
+          Inspector.refresh();
+          updateSpecimenPreview(font);
+          UI.toast(`Applied "${font}" to selected text`, 'Aa');
+        }
+      });
+    });
+  }
+
+  function updateSpecimenPreview(font) {
+    const $sample = document.getElementById('font-specimen-sample');
+    const $name = document.getElementById('font-specimen-name');
+    if ($sample) {
+      $sample.style.fontFamily = `"${font}", sans-serif`;
+    }
+    if ($name) {
+      $name.textContent = font;
+    }
+  }
+
+  // Toolbar font button
+  document.getElementById('btn-tb-fonts')?.addEventListener('click', openFontManagerModal);
+  document.getElementById('font-manager-close')?.addEventListener('click', closeFontManagerModal);
+  document.getElementById('font-manager-done-btn')?.addEventListener('click', closeFontManagerModal);
+
+  // Scan laptop fonts modal button
+  document.getElementById('btn-scan-laptop-fonts-modal')?.addEventListener('click', async () => {
+    if (typeof Fonts === 'undefined') return;
+    UI.toast('Accessing installed laptop fonts...', '⏳');
+    const res = await Fonts.scanLaptopFonts();
+    if (res.success) {
+      UI.toast(`Discovered ${res.count} fonts from your laptop!`, '💻');
+      _activeFontFilter = 'laptop';
+      document.querySelectorAll('#font-filter-chips .style-chip').forEach($c => {
+        $c.classList.toggle('selected', $c.dataset.fontFilter === 'laptop');
+      });
+      renderFontCards(_activeFontFilter, _fontSearchQuery);
+      LeftPanel.buildStylePanel();
+      Inspector.refresh();
+    } else {
+      alert(res.error);
+    }
+  });
+
+  // Import font file button
+  document.getElementById('btn-import-font-file-modal')?.addEventListener('click', () => {
+    document.getElementById('font-upload-hidden')?.click();
+  });
+
+  document.getElementById('font-upload-hidden')?.addEventListener('change', async (e) => {
+    if (typeof Fonts === 'undefined') return;
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
+    for (const f of files) {
+      try {
+        const loadedName = await Fonts.importFontFile(f);
+        UI.toast(`Imported font "${loadedName}"!`, '🌟');
+      } catch (err) {
+        UI.toast(`Could not load ${f.name}`, '⚠');
+      }
+    }
+    e.target.value = '';
+    _activeFontFilter = 'custom';
+    document.querySelectorAll('#font-filter-chips .style-chip').forEach($c => {
+      $c.classList.toggle('selected', $c.dataset.fontFilter === 'custom');
+    });
+    renderFontCards(_activeFontFilter, _fontSearchQuery);
+    LeftPanel.buildStylePanel();
+    Inspector.refresh();
+  });
+
+  // Filter chips in modal
+  document.querySelectorAll('#font-filter-chips .style-chip').forEach($chip => {
+    $chip.addEventListener('click', () => {
+      document.querySelectorAll('#font-filter-chips .style-chip').forEach($x => $x.classList.remove('selected'));
+      $chip.classList.add('selected');
+      _activeFontFilter = $chip.dataset.fontFilter;
+      renderFontCards(_activeFontFilter, _fontSearchQuery);
+    });
+  });
+
+  // Search input in modal
+  document.getElementById('font-search-input')?.addEventListener('input', (e) => {
+    _fontSearchQuery = e.target.value;
+    renderFontCards(_activeFontFilter, _fontSearchQuery);
+  });
+
+  // Expose on App
+  window.App = {
+    openFontManagerModal,
+    closeFontManagerModal,
+    openSmartComposeModal,
+    closeSmartComposeModal,
+  };
+
   /* ── Module inits ─────────────────────────── */
+  if (typeof Fonts !== 'undefined') Fonts.init();
   Canvas.init();
   Navigator.init();
   Preview.init();

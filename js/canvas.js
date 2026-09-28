@@ -145,7 +145,7 @@ const Canvas = (() => {
 
     if (el.type === 'text') {
       $el.classList.add('slide-text-el');
-      $el.style.fontFamily = `'${el.fontFamily}', serif`;
+      $el.style.fontFamily = `"${el.fontFamily}", sans-serif`;
       $el.style.fontSize   = Math.round(el.fontSize * zoom) + 'px';
       $el.style.fontWeight = el.fontWeight;
       $el.style.color      = el.color;

@@ -97,6 +97,9 @@ const Exporter = (() => {
   }
 
   async function renderSlideToCanvas(slide, w, h) {
+    if (document.fonts && document.fonts.ready) {
+      try { await document.fonts.ready; } catch (e) {}
+    }
     const $canvas = document.createElement('canvas');
     $canvas.width  = w;
     $canvas.height = h;
@@ -138,8 +141,11 @@ const Exporter = (() => {
         }
 
       } else if (el.type === 'text') {
+        if (typeof Fonts !== 'undefined' && Fonts.ensureFontReady) {
+          try { await Fonts.ensureFontReady(el.fontFamily, el.fontWeight); } catch (e) {}
+        }
         ctx.fillStyle = el.color;
-        ctx.font = `${el.fontWeight} ${el.fontSize}px '${el.fontFamily}', serif`;
+        ctx.font = `${el.fontWeight} ${el.fontSize}px "${el.fontFamily}", sans-serif`;
         ctx.textBaseline = 'top';
         if (el.isBadge) {
           ctx.shadowColor = 'rgba(0,0,0,0.6)';

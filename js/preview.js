@@ -104,7 +104,7 @@ const Preview = (() => {
       `;
 
       if (el.type === 'text') {
-        $el.style.fontFamily = `'${el.fontFamily}',serif`;
+        $el.style.fontFamily = `"${el.fontFamily}", sans-serif`;
         $el.style.fontSize   = Math.round(el.fontSize * scale) + 'px';
         $el.style.fontWeight = el.fontWeight;
         $el.style.color      = el.color;

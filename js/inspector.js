@@ -124,10 +124,12 @@ const Inspector = (() => {
           <div class="inspector-group-title">Typography</div>
           <div class="property-row">
             <div class="property-label">Family</div>
-            <select class="panel-select" id="prop-font-family" style="flex:1;">
-              ${['Playfair Display','Inter','DM Serif Display','Space Grotesk','Cormorant Garamond','IBM Plex Mono']
-                .map(f => `<option value="${f}" ${el.fontFamily === f ? 'selected' : ''}>${f}</option>`).join('')}
+            <select class="panel-select" id="prop-font-family" style="flex:1;font-size:11px;">
+              ${typeof Fonts !== 'undefined' ? Fonts.renderSelectOptions(el.fontFamily) : `<option value="${el.fontFamily}">${el.fontFamily}</option>`}
             </select>
+            <button class="tb-btn" id="prop-open-font-manager" title="Browse laptop & custom fonts" style="width:26px;height:26px;flex-shrink:0;">
+              💻
+            </button>
           </div>
           <div class="property-row-2col">
             <div>
@@ -333,6 +335,11 @@ const Inspector = (() => {
         HISTORY.snapshot();
         Canvas.rebuild();
       });
+      $body.querySelector('#prop-open-font-manager')?.addEventListener('click', () => {
+        if (typeof App !== 'undefined' && App.openFontManagerModal) {
+          App.openFontManagerModal();
+        }
+      });
       $body.querySelector('#prop-font-size')?.addEventListener('change', e => {
         el.fontSize = parseInt(e.target.value, 10);
         HISTORY.snapshot();
@@ -484,6 +491,10 @@ const Inspector = (() => {
       $img.style.filter = `brightness(${f.brightness ?? 100}%) contrast(${f.contrast ?? 100}%) saturate(${f.saturation ?? 100}%)`;
     }
   }
+
+  Events.on('fonts:updated', () => {
+    refresh();
+  });
 
   return { refresh };
 })();

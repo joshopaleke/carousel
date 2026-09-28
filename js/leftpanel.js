@@ -27,6 +27,12 @@ const LeftPanel = (() => {
         Canvas.handleImageFile(file, slideId, null);
       }
     });
+
+    Events.on('fonts:updated', () => {
+      if (STATE.ui.leftTab === 'style') {
+        buildStylePanel();
+      }
+    });
   }
 
   function buildStylePanel() {
@@ -93,6 +99,40 @@ const LeftPanel = (() => {
             <input type="color" id="custom-bg-color" value="${STATE.style.bgColor}" style="width:28px;height:24px;border:none;background:none;cursor:pointer;padding:0;border-radius:3px;">
             <input class="property-input" id="custom-bg-hex" value="${STATE.style.bgColor}" style="flex:1;font-size:11px;">
           </div>
+        </div>
+      <!-- Typography & System Fonts -->
+      <div class="panel-section">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+          <div class="panel-section-title" style="margin-bottom:0;">Typography</div>
+          <button class="tb-btn" id="btn-open-font-manager" title="Browse all laptop & custom fonts" style="width:auto;height:24px;padding:0 8px;font-size:10px;gap:4px;background:var(--c-surface-2);border-radius:4px;color:var(--c-text-2);">
+            💻 Laptop Fonts
+          </button>
+        </div>
+
+        <div style="margin-bottom:8px;">
+          <div style="font-size:10px;color:var(--c-text-3);margin-bottom:4px;">Display / Headline Font</div>
+          <select class="panel-select" id="global-font-display" style="width:100%;font-size:11px;">
+            ${typeof Fonts !== 'undefined' ? Fonts.renderSelectOptions(STATE.style.fontDisplay) : `<option value="${STATE.style.fontDisplay}">${STATE.style.fontDisplay}</option>`}
+          </select>
+        </div>
+
+        <div style="margin-bottom:10px;">
+          <div style="font-size:10px;color:var(--c-text-3);margin-bottom:4px;">Body / Subtitle Font</div>
+          <select class="panel-select" id="global-font-body" style="width:100%;font-size:11px;">
+            ${typeof Fonts !== 'undefined' ? Fonts.renderSelectOptions(STATE.style.fontBody || 'Inter') : `<option value="Inter">Inter</option>`}
+          </select>
+        </div>
+
+        <div style="display:flex;gap:6px;">
+          <button class="btn-ghost" id="btn-quick-scan-fonts" style="flex:1;font-size:10px;height:26px;justify-content:center;padding:0 6px;gap:4px;">
+            💻 Scan Laptop
+          </button>
+          <button class="btn-ghost" id="btn-quick-upload-font" style="flex:1;font-size:10px;height:26px;justify-content:center;padding:0 6px;gap:4px;">
+            📁 Import Font
+          </button>
+        </div>
+        <div id="font-status-hint" style="font-size:9px;color:var(--c-text-3);margin-top:6px;line-height:1.3;">
+          ${typeof Fonts !== 'undefined' && Fonts.getLaptopFonts().length > 0 ? `✓ ${Fonts.getLaptopFonts().length} laptop fonts loaded` : 'Supports macOS/Windows system fonts & .ttf/.otf files'}
         </div>
       </div>
 
@@ -210,16 +250,52 @@ const LeftPanel = (() => {
 
     $body.querySelector('#global-font-display')?.addEventListener('change', e => {
       STATE.style.fontDisplay = e.target.value;
-      // Apply to all text elements
       STATE.carousel.slides.forEach(s => {
         s.elements.forEach(el => {
-          if (el.type === 'text' && (el.role === 'hero' || el.role === 'label')) {
+          if (el.type === 'text' && (el.role === 'hero' || el.role === 'label' || !el.role)) {
             el.fontFamily = e.target.value;
           }
         });
       });
       HISTORY.snapshot();
       Canvas.rebuild();
+      UI.toast(`Display font: ${e.target.value}`, 'Aa');
+    });
+
+    $body.querySelector('#global-font-body')?.addEventListener('change', e => {
+      STATE.style.fontBody = e.target.value;
+      STATE.carousel.slides.forEach(s => {
+        s.elements.forEach(el => {
+          if (el.type === 'text' && (el.role === 'supporting' || el.role === 'info')) {
+            el.fontFamily = e.target.value;
+          }
+        });
+      });
+      HISTORY.snapshot();
+      Canvas.rebuild();
+      UI.toast(`Body font: ${e.target.value}`, 'Aa');
+    });
+
+    $body.querySelector('#btn-open-font-manager')?.addEventListener('click', () => {
+      if (typeof App !== 'undefined' && App.openFontManagerModal) {
+        App.openFontManagerModal();
+      }
+    });
+
+    $body.querySelector('#btn-quick-scan-fonts')?.addEventListener('click', async () => {
+      if (typeof Fonts === 'undefined') return;
+      UI.toast('Accessing laptop fonts...', '⏳');
+      const res = await Fonts.scanLaptopFonts();
+      if (res.success) {
+        UI.toast(`Found ${res.count} installed fonts!`, '💻');
+        buildStylePanel();
+      } else {
+        UI.toast(res.error || 'Could not access local fonts', '⚠');
+      }
+    });
+
+    $body.querySelector('#btn-quick-upload-font')?.addEventListener('click', () => {
+      document.getElementById('font-upload-hidden')?.click();
     });
 
     $body.querySelector('#global-badge-text')?.addEventListener('change', e => {
